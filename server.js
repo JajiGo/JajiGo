@@ -135,6 +135,9 @@ app.patch('/api/admin/businesses/:id/verification', requireAuth, requireRole('ad
   res.json({ ok: true });
 }));
 
+// ---------- Shopping marketplace (Step 3) ----------
+require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
+
 // ---------- Errors ----------
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 app.use((err, req, res, next) => {
