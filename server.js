@@ -17,7 +17,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persi
 const anon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
 
 const app = express();
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: { directives: {
+  defaultSrc: ["'self'"], scriptSrc: ["'self'", "'unsafe-inline'"], styleSrc: ["'self'", "'unsafe-inline'"],
+  imgSrc: ["'self'", 'data:', 'blob:', SUPABASE_URL], connectSrc: ["'self'", SUPABASE_URL],
+} } }));
 app.use(cors({ origin: FRONTEND_ORIGIN ? FRONTEND_ORIGIN.split(',') : false }));
 app.use(express.json({ limit: '100kb' }));
 
@@ -137,6 +140,9 @@ app.patch('/api/admin/businesses/:id/verification', requireAuth, requireRole('ad
 
 // ---------- Shopping marketplace (Step 3) ----------
 require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
+
+// ---------- Website (the app screens) ----------
+app.use(express.static(require('path').join(__dirname, 'public')));
 
 // ---------- Errors ----------
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
