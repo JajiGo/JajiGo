@@ -80,6 +80,13 @@ app.post('/api/auth/login', authLimiter, wrap(async (req, res) => {
   res.json({ access_token: data.session.access_token, refresh_token: data.session.refresh_token, expires_at: data.session.expires_at, user: profile });
 }));
 
+app.post('/api/auth/refresh', authLimiter, wrap(async (req, res) => {
+  const b = validate(z.object({ refresh_token: z.string().min(10) }), req.body);
+  const { data, error } = await anon.auth.refreshSession({ refresh_token: b.refresh_token });
+  if (error || !data.session) return res.status(401).json({ error: 'Please log in again' });
+  res.json({ access_token: data.session.access_token, refresh_token: data.session.refresh_token, expires_at: data.session.expires_at });
+}));
+
 app.get('/api/me', requireAuth, wrap(async (req, res) => {
   const { data: businesses } = await db.from('businesses').select('id, marketplace, name, verification, rejection_reason').eq('owner_id', req.user.id);
   res.json({ user: { id: req.user.id, email: req.user.email, full_name: req.user.full_name, phone: req.user.phone, role: req.user.role }, businesses: businesses || [] });
