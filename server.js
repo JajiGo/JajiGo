@@ -146,6 +146,7 @@ app.patch('/api/admin/businesses/:id/verification', requireAuth, requireRole('ad
 }));
 
 // ---------- Shopping marketplace (Step 3) ----------
+require('./extras')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
 require('./reviews')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 
