@@ -168,6 +168,16 @@ module.exports = function extras({ app, db, requireAuth, requireRole, wrap, vali
     res.json({ ok: true });
   }));
 
+  // ---------- NOTIFICATIONS (bell) ----------
+  app.get('/api/notifications', requireAuth, wrap(async (req, res) => {
+    const { data } = await db.from('notifications').select('id, title, body, kind, is_read, created_at').eq('user_id', req.user.id).order('created_at', { ascending: false }).limit(40);
+    res.json({ notifications: data || [], unread: (data || []).filter((n) => !n.is_read).length });
+  }));
+  app.post('/api/notifications/read', requireAuth, wrap(async (req, res) => {
+    await db.from('notifications').update({ is_read: true }).eq('user_id', req.user.id).eq('is_read', false);
+    res.json({ ok: true });
+  }));
+
   // ---------- HOME SLIDER BANNERS ----------
   const BUCKET = 'banners', PREFIX = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
   async function verifyBanner(url) {
