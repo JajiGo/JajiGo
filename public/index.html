@@ -49,12 +49,13 @@ h2.sec{font-size:16.5px;font-weight:800;margin:18px 0 10px}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom,0px)}
 nav.tabs a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;font-size:10.5px;color:var(--mut);text-decoration:none}nav.tabs a .ti{font-size:21px;line-height:1}nav.tabs a.on{color:var(--g);font-weight:700}
 .toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:99;max-width:88%;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:.95}
+.near{background:linear-gradient(135deg,#e7f4ee,#fff);border:1px solid #cfe8da;border-radius:var(--r);padding:13px;margin-bottom:14px}.near a{text-decoration:none;color:var(--ink);flex:none;padding:8px 12px;font-size:12.5px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body>
 <header><div class="logo"><span class="j">Jaji</span><span class="go">Go</span></div><div class="loc">📍 Jaji, Kaduna</div>
 <div class="searchbar" id="sb"><span>🔍</span><input id="q" type="search" placeholder="What are you looking for?"></div></header>
 <main id="app"><div class="spin"></div></main><div class="toast" id="toast"></div>
-<nav class="tabs"><a href="#/home" data-n="home"><span class="ti">🏠</span>Home</a><a href="#/cart" data-n="cart"><span class="ti">🛒</span>Cart<span id="bd"></span></a><a href="#/orders" data-n="orders"><span class="ti">📦</span>Orders</a><a href="#/me" data-n="me"><span class="ti">👤</span>Profile</a></nav>
+<nav class="tabs"><a href="#/home" data-n="home"><span class="ti">🏠</span>Home</a><a href="#/explore" data-n="explore"><span class="ti">🔍</span>Explore</a><a href="#/cart" data-n="cart"><span class="ti">🛒</span>Cart<span id="bd"></span></a><a href="#/orders" data-n="orders"><span class="ti">📦</span>Orders</a><a href="#/me" data-n="me"><span class="ti">👤</span>Profile</a></nav>
 <script>
 const S={t:null,u:null,q:'',cat:'',tab:'orders',mode:'login'};
 try{S.t=localStorage.getItem('t');S.u=JSON.parse(localStorage.getItem('u')||'null')}catch(e){}
@@ -84,11 +85,14 @@ const prods=l=>l.length?`<div class="grid2">${l.map(p=>{const i=(p.product_image
 return `<div class="pcard"><a href="#/product/${p.id}" class="pimg" style="text-decoration:none">${i?`<img loading="lazy" src="${esc(i.image_url)}" alt="">`:'🛍️'}</a><div class="pbody"><a href="#/product/${p.id}" class="pname" style="display:block;color:inherit;text-decoration:none">${esc(p.name)}</a><div class="psub">${esc(sh?sh.name:'')}</div><div class="psub" data-rp="${p.id}" style="min-height:16px"></div><div class="pprice">${p.discount_percent?`<s style="color:var(--mut);font-weight:500;font-size:12px">${naira(p.price_kobo)}</s> `:''}${naira(p.final_price_kobo)}</div><button class="btn sm" style="width:100%" data-a="add" data-id="${p.id}">Add to cart</button></div></div>`}).join('')}</div>`:empty('📦','No products found');
 
 const V={
-home:async()=>{const [c,p,s]=await Promise.all([api('/shopping/categories'),api('/shopping/products?'+new URLSearchParams({q:S.q,category_id:S.cat})),api('/shopping/shops')]);
-SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);
-return `<h2 class="sec" style="margin-top:2px">🗂️ Categories</h2><div class="cats">${c.categories.map(x=>`<div class="cat ${S.cat==x.id?'on':''}" data-a="cat" data-id="${S.cat==x.id?'':x.id}"><div class="ci">${CI[x.name]||'🛍️'}</div><div class="cn">${esc(x.name)}</div></div>`).join('')}</div>
-<h2 class="sec">⭐ Shops near you</h2>${s.shops.length?s.shops.map(x=>`<a class="vcard" href="#/shop/${x.id}">${logo(x)}<div class="g1"><div class="vname">${esc(x.name)}</div><div class="vmeta">${esc(x.address||'Jaji')} · ${x.offers_delivery?'Delivery':'Pickup'}</div><div class="vmeta" data-rs="${x.id}" style="min-height:16px"></div></div></a>`).join(''):empty('🏪','No shops yet')}
-<h2 class="sec">🔥 ${S.q?'Results for “'+esc(S.q)+'”':'Products'}</h2>${prods(p.products)}`},
+home:async()=>{const [c,p,s,m]=await Promise.all([api('/shopping/categories'),api('/shopping/products'),api('/shopping/shops'),api('/shopping/products?morning_rush=true')]);
+SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);const g=greet(),nm=S.u&&S.u.full_name?', '+esc(S.u.full_name.split(' ')[0]):'';
+return `<div style="margin:2px 0 12px"><div style="font-size:20px;font-weight:800">${g[0]} ${g[1]}${nm}</div><div class="mut">Welcome to JajiGo — Jaji, Kaduna</div></div>
+${m.products.length?`<a href="#/morning" class="card" style="display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#fff8e8,#f3fff9);border-color:#f1e2b8"><b>🌅 Morning Rush</b><div class="mut">${m.products.length} fresh breakfast item${m.products.length==1?'':'s'} available. Tap to order.</div></a>`:''}
+<div class="near"><div style="font-weight:800">📍 Find what's near you</div><div class="mut" style="margin:3px 0 9px">Open Google Maps for places close to you.</div><div style="display:flex;gap:8px;flex-wrap:wrap">${[['🏪 Shops','shops near me'],['🏥 Hospitals','hospital near me'],['💊 Pharmacies','pharmacy near me'],['🍽️ Restaurants','restaurant near me']].map(x=>`<a class="chip" href="https://www.google.com/maps/search/${encodeURIComponent(x[1])}" target="_blank" rel="noopener">${x[0]}</a>`).join('')}</div></div>
+<h2 class="sec">🗂️ Categories</h2><div class="cats">${c.categories.map(x=>`<div class="cat" data-a="gocat" data-id="${x.id}"><div class="ci">${CI[x.name]||'🛍️'}</div><div class="cn">${esc(x.name)}</div></div>`).join('')}</div>
+<h2 class="sec">⭐ Popular shops</h2>${s.shops.length?s.shops.slice(0,6).map(shopCard).join(''):empty('🏪','No shops yet')}
+<h2 class="sec">🔥 Recommended for you</h2>${prods(p.products.slice(0,8))}<a class="btn sec" href="#/explore" style="margin-top:4px">See all products</a>`},
 shop:async id=>{const d=await api('/shopping/shops/'+id);SHOPS[d.shop.id]=d.shop;return `<a href="#/home" class="mut" style="text-decoration:none;font-weight:700;color:var(--g2)">‹ Back</a><div class="vcard" style="margin-top:8px">${logo(d.shop)}<div class="g1"><div class="vname">${esc(d.shop.name)}</div><div class="vmeta">${esc(d.shop.description||'')}</div><div class="vmeta">${esc(d.shop.address||'')}</div></div></div>${prods(d.products)}`},
 cart:async()=>{if(!S.t)return need()||'';const c=await api('/shopping/cart');if(!c.items.length)return empty('🛒','Your cart is empty');
 return `<h2 class="sec" style="margin-top:2px">🛒 Your cart</h2>`+c.items.map(i=>`<div class="card row"><div class="g1"><div class="vname">${esc(i.name)}</div><div class="vmeta">${naira(i.unit_price_kobo)} ${i.in_stock?'':'<span style="color:var(--o)">· not enough stock</span>'}</div></div><div class="stepper"><button data-a="qty" data-id="${i.product_id}" data-q="${i.quantity-1}">−</button><span>${i.quantity}</span><button data-a="qty" data-id="${i.product_id}" data-q="${i.quantity+1}">+</button></div></div>`).join('')+
@@ -130,7 +134,7 @@ const acts=o=>{const b=(s,t,c)=>`<button class="btn sm ${c||''}" data-a="st" dat
 return {pending:b('accepted','Accept')+b('rejected','Reject','warn'),accepted:b('preparing','Preparing'),preparing:b('ready','Ready'),ready:(o.fulfilment==='delivery'?b('on_the_way','On the way'):'')+b('delivered','Delivered'),on_the_way:b('delivered','Delivered')}[o.status]||''};
 
 const A={
-search:()=>{S.q=val('q');route()},cat:(id)=>{S.cat=id;route()},tab:(id)=>{S.tab=id;route()},mode:(id)=>{S.mode=id;route()},
+search:()=>{S.q=val('q');if(location.hash.indexOf('#/explore')!==0)location.hash='#/explore';else route()},cat:(id)=>{S.cat=id;route()},tab:(id)=>{S.tab=id;route()},mode:(id)=>{S.mode=id;route()},
 add:async id=>{if(need())return;const c=await api('/shopping/cart');const q=((c.items.find(i=>i.product_id===id)||{}).quantity||0)+1;await api('/shopping/cart',{method:'PUT',body:{product_id:id,quantity:q}});toast('Added to cart');badge()},
 qty:async(id,el)=>{await api('/shopping/cart',{method:'PUT',body:{product_id:id,quantity:Number(el.dataset.q)}});route()},
 order:async()=>{const f=val('ful');const r=await api('/shopping/orders',{method:'POST',body:{fulfilment:f,delivery_address:f==='delivery'?val('addr'):undefined}});toast('Order placed!');location.hash='#/order/'+r.orders[0].id},
@@ -147,6 +151,19 @@ delp:async id=>{if(!confirm('Delete this product?'))return;await api('/seller/pr
 ver:async(id,el)=>{const s=el.dataset.s,b={status:s};if(s==='rejected'){b.reason=prompt('Reason for rejecting');if(!b.reason)return}await api('/admin/businesses/'+id+'/verification',{method:'PATCH',body:b});route()}
 };
 
+const greet=()=>{const h=new Date().getHours();return h>=5&&h<12?['🌅','Good morning']:h<17?['☀️','Good afternoon']:h<21?['🌇','Good evening']:['🌙','Good night']};
+const shopCard=x=>`<a class="vcard" href="#/shop/${x.id}">${logo(x)}<div class="g1"><div class="vname">${esc(x.name)}</div><div class="vmeta">${esc(x.address||'Jaji')} · ${x.offers_delivery?'Delivery':'Pickup'}</div><div class="vmeta" data-rs="${x.id}" style="min-height:16px"></div></div></a>`;
+S.price='';S.view='products';
+Object.assign(V,{
+explore:async()=>{const qs=new URLSearchParams({q:S.q,category_id:S.cat});if(S.price)qs.set('max_price',String(Number(S.price)*100));
+const [c,p,s]=await Promise.all([api('/shopping/categories'),api('/shopping/products?'+qs),api('/shopping/shops?'+new URLSearchParams({q:S.q}))]);SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);
+return `<div class="chips"><button class="chip ${S.cat?'':'on'}" style="flex:none" data-a="cat" data-id="">🔍 All</button>${c.categories.map(x=>`<button class="chip ${S.cat==x.id?'on':''}" style="flex:none" data-a="cat" data-id="${x.id}">${CI[x.name]||'🛍️'} ${esc(x.name)}</button>`).join('')}</div>
+<div class="chips" style="margin-top:6px"><button class="chip ${S.price==='1500'?'on':''}" style="flex:none" data-a="price" data-id="1500">≤ ₦1,500</button><button class="chip ${S.price==='3000'?'on':''}" style="flex:none" data-a="price" data-id="3000">≤ ₦3,000</button><button class="chip ${S.view==='products'?'on':''}" style="flex:none" data-a="vw" data-id="products">Products</button><button class="chip ${S.view==='shops'?'on':''}" style="flex:none" data-a="vw" data-id="shops">Shops</button></div>
+<h2 class="sec">${S.q?'Results for “'+esc(S.q)+'”':(S.view==='shops'?'⭐ Shops':'🔥 Products')}</h2>${S.view==='shops'?(s.shops.length?s.shops.map(shopCard).join(''):empty('🏪','No shops found')):prods(p.products)}`},
+morning:async()=>{const [p,s]=await Promise.all([api('/shopping/products?morning_rush=true'),api('/shopping/shops')]);SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);
+return `<a href="#/home" class="mut" style="text-decoration:none;font-weight:700;color:var(--g2)">‹ Back</a><h2 class="sec">🌅 Morning Rush</h2><div class="mut" style="margin-bottom:10px">Fresh breakfast from approved shops.</div>`+prods(p.products)}
+});
+Object.assign(A,{gocat:(id)=>{S.cat=id;S.q='';document.getElementById('q').value='';location.hash='#/explore'},price:(id)=>{S.price=S.price===id?'':id;route()},vw:(id)=>{S.view=id;route()}});
 // ===== Reviews & trust (batch 1) =====
 S.rsort='newest';S.rphotos=false;S.rv=null;
 const TAGL={excellent_quality:'Excellent quality',worth_the_price:'Worth the price',accurate_description:'Accurate description',good_packaging:'Good packaging',fast_delivery:'Fast delivery',poor_quality:'Poor quality',not_as_described:'Not as described'};
@@ -203,8 +220,8 @@ async function fillRatings(){for(const [attr,kind] of [['rp','product'],['rs','s
 function sess(r){S.t=r.access_token;S.u=r.user;localStorage.setItem('t',S.t);localStorage.setItem('r',r.refresh_token);localStorage.setItem('u',JSON.stringify(r.user));location.hash='#/home';route()}
 async function badge(){const e=document.getElementById('bd');if(!S.t){e.textContent='';return}try{const c=await api('/shopping/cart');const n=c.items.reduce((s,i)=>s+i.quantity,0);e.textContent=n?' ('+n+')':''}catch(x){}}
 async function route(){const[p,id]=location.hash.slice(2).split('/');const k=V[p]?p:'home';
-document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.n===({shop:'home',product:'home',order:'orders',review:'orders',seller:'me',admin:'me',reviewedit:'me',myreviews:'me',adminreviews:'me'}[k]||k)));
-document.getElementById('sb').style.display=k==='home'?'flex':'none';
+document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.n===({shop:'home',product:'home',morning:'home',order:'orders',review:'orders',seller:'me',admin:'me',reviewedit:'me',myreviews:'me',adminreviews:'me'}[k]||k)));
+document.getElementById('sb').style.display=(k==='home'||k==='explore')?'flex':'none';
 app.innerHTML='<div class="spin"></div>';try{app.innerHTML=await V[k](id);const so=document.getElementById('rsort');if(so)so.value=S.rsort;fillRatings()}catch(e){app.innerHTML=empty('⚠️',e.message)}badge()}
 document.addEventListener('click',async e=>{const el=e.target.closest('[data-a]');if(!el)return;el.disabled=true;try{await A[el.dataset.a](el.dataset.id,el)}catch(x){toast(x.message)}el.disabled=false});
 document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')A.search()});
