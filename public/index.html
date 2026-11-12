@@ -14,7 +14,9 @@ header{background:var(--g);color:#fff;padding:calc(14px + env(safe-area-inset-to
 .logo{font-size:24px;font-weight:800;letter-spacing:-1.2px;line-height:1}.logo .j{color:#fff}.logo .go{color:#86efac;position:relative}
 .logo .go:after{content:'\27A4';position:absolute;color:#ff9a3d;font-size:.36em;right:.03em;top:-.78em;transform:rotate(-18deg)}
 .loc{font-size:12.5px;opacity:.92;margin-top:3px}
-.searchbar{display:flex;align-items:center;background:#fff;border-radius:12px;padding:0 12px;height:46px;gap:8px;margin-top:10px}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.searchwrap{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.searchbar{display:flex;align-items:center;background:#fff;border-radius:12px;padding:0 12px;height:46px;gap:8px}
 .searchbar input{border:none;outline:none;flex:1;font-size:15px;height:100%;background:transparent;color:var(--ink)}
 main{padding:14px 14px 20px;max-width:560px;margin:0 auto}
 h2.sec{font-size:16.5px;font-weight:800;margin:18px 0 10px}
@@ -35,7 +37,7 @@ h2.sec{font-size:16.5px;font-weight:800;margin:18px 0 10px}
 .pill{display:inline-flex;background:var(--g3);color:var(--g);border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}.pill.red{background:#fdebe9;color:var(--o)}.pill.amber{background:#fdf3e0;color:#a06514}
 .chip{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);font-family:inherit;flex:1}.chip.on{background:var(--g);border-color:var(--g);color:#fff}
 .tabs2{display:flex;gap:7px;margin-bottom:12px}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
 .field{margin-bottom:12px}.field label{font-size:13px;font-weight:700;display:block;margin-bottom:5px}
 .field input,.field select,.field textarea{width:100%;height:46px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;font-size:15px;background:#fff;outline:none;color:var(--ink);font-family:inherit}.field textarea{height:80px;padding:10px 12px}
 .field input[type=file]{padding:9px 12px}.field input[type=checkbox]{width:auto;height:auto}
@@ -55,12 +57,36 @@ nav.tabs a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
 .slide{flex:0 0 100%;scroll-snap-align:start;display:block;overflow:hidden;background:var(--g3)}
 .slide img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1);transition:transform 5s ease-out}.slide.on img{transform:scale(1.06)}
 .dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none}.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);transition:all .25s}.dots i.on{background:#fff;width:18px;border-radius:4px}
-@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.iconbtn{background:rgba(255,255,255,.16);border:none;color:#fff;font-size:19px;width:40px;height:40px;border-radius:12px;position:relative;cursor:pointer;padding:0}
+.badge{position:absolute;top:4px;right:4px;background:var(--o);font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;color:#fff}
+.aibtn{background:linear-gradient(135deg,#f4b53f,#e2574c);border:none;color:#fff;font-weight:700;font-size:14.5px;border-radius:12px;height:42px;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;width:100%;font-family:inherit}
+.jg-greeting{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(231,244,238,.96),rgba(255,255,255,.96));border:1px solid rgba(14,122,79,.12);border-radius:18px;padding:15px 16px;margin:2px 0 16px;box-shadow:0 8px 24px rgba(14,122,79,.07)}
+.jg-greet-title{font-size:20px;font-weight:800;color:var(--g2);letter-spacing:-.2px}.jg-greet-sub{margin-top:3px;color:var(--mut);font-size:13px}
+.jg-greeting::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-24px;top:-28px;background:rgba(244,181,63,.12)}
+nav.tabs{background:rgba(255,255,255,.95);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(14,122,79,.14);box-shadow:0 -10px 26px rgba(14,122,79,.09)}
+nav.tabs a{position:relative;padding:8px 2px 7px}nav.tabs a .ti{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:30px;padding:0 16px;border-radius:999px;transition:background .2s,transform .15s}
+nav.tabs a:active .ti{background:rgba(22,163,74,.24);transform:scale(.9)}
+nav.tabs a.on{color:#0a7d43;font-weight:800}nav.tabs a.on::before{content:"";position:absolute;top:-1px;left:50%;width:30px;height:3px;margin-left:-15px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,#34d399,#16a34a)}
+nav.tabs a.on .ti{background:linear-gradient(135deg,#4ade80 0%,#16a34a 60%,#0e7a4f 100%);box-shadow:0 6px 14px rgba(22,163,74,.40),inset 0 1px 0 rgba(255,255,255,.35)}
+.fl{position:fixed;right:16px;width:56px;height:56px;border:0;border-radius:50%;color:#fff;font-size:23px;align-items:center;justify-content:center;z-index:40;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.20);text-decoration:none;display:flex}
+.fl-cart{bottom:calc(156px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#16a34a,#0e7a4f)}.fl-order{bottom:calc(224px + env(safe-area-inset-bottom,0px));background:linear-gradient(135deg,#ff9a3d,#e2574c);display:none}
+.fc{position:absolute;right:-2px;top:-3px;min-width:21px;height:21px;padding:0 5px;border-radius:999px;background:#172033;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.fl-ai{position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:45;width:58px;height:58px;border:0;border-radius:50%;background:linear-gradient(135deg,#f4b53f,#e2574c);color:#fff;font-size:25px;box-shadow:0 10px 24px rgba(0,0,0,.22);cursor:pointer;display:flex;align-items:center;justify-content:center;animation:aiPulse 2.4s ease-in-out infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 10px 24px rgba(0,0,0,.22)}50%{box-shadow:0 10px 28px rgba(226,87,76,.42),0 0 0 8px rgba(244,181,63,.12)}}
+.jg-ambient-icons{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.jg-float-icon{position:absolute;display:block;font-size:clamp(24px,5vw,48px);opacity:.065;user-select:none;animation:jgFloat linear infinite}
+.jg-fi1{left:6%;top:17%;animation-duration:31s}.jg-fi2{left:78%;top:12%;animation-duration:38s;animation-delay:-21s}.jg-fi3{left:88%;top:53%;animation-duration:34s;animation-delay:-14s}.jg-fi4{left:11%;top:69%;animation-duration:42s;animation-delay:-30s}.jg-fi5{left:48%;top:7%;animation-duration:37s;animation-delay:-19s}.jg-fi6{left:62%;top:78%;animation-duration:44s;animation-delay:-9s}.jg-fi7{left:30%;top:40%;animation-duration:40s;animation-delay:-25s}.jg-fi8{left:70%;top:30%;animation-duration:36s;animation-delay:-5s}
+@keyframes jgFloat{0%{transform:translate3d(0,0,0) rotate(-4deg)}25%{transform:translate3d(22px,-18px,0) rotate(3deg)}50%{transform:translate3d(-12px,-34px,0) rotate(-2deg)}75%{transform:translate3d(-28px,-12px,0) rotate(4deg)}100%{transform:translate3d(0,0,0) rotate(-4deg)}}
+header,main{position:relative;z-index:1}body{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.slide img{transition:none}}
 </style></head><body>
-<header><div class="logo"><span class="j">Jaji</span><span class="go">Go</span></div><div class="loc">📍 Jaji, Kaduna</div>
-<div class="searchbar" id="sb"><span>🔍</span><input id="q" type="search" placeholder="What are you looking for?"></div></header>
+<div class="jg-ambient-icons" aria-hidden="true"><span class="jg-float-icon jg-fi1">🛍️</span><span class="jg-float-icon jg-fi2">🍔</span><span class="jg-float-icon jg-fi3">🚗</span><span class="jg-float-icon jg-fi4">✂️</span><span class="jg-float-icon jg-fi5">🔧</span><span class="jg-float-icon jg-fi6">🧺</span><span class="jg-float-icon jg-fi7">📦</span><span class="jg-float-icon jg-fi8">🛵</span></div>
+<header><div class="hrow"><div><div class="logo"><span class="j">Jaji</span><span class="go">Go</span></div><div class="loc">📍 Jaji, Kaduna</div></div><div style="display:flex;gap:8px"><button class="iconbtn" data-a="bell" aria-label="Notifications">🔔<span class="badge" id="nb" style="display:none">0</span></button><button class="iconbtn" data-a="lang" aria-label="Language">🌐</button></div></div>
+<div class="searchwrap" id="sb"><div class="searchbar"><span>🔍</span><input id="q" type="search" placeholder="What are you looking for?"></div><button class="aibtn" data-a="ai">✨ Ask JajiGo AI</button></div></header>
 <main id="app"><div class="spin"></div></main><div class="toast" id="toast"></div>
-<nav class="tabs"><a href="#/home" data-n="home"><span class="ti">🏠</span>Home</a><a href="#/explore" data-n="explore"><span class="ti">🔍</span>Explore</a><a href="#/cart" data-n="cart"><span class="ti">🛒</span>Cart<span id="bd"></span></a><a href="#/orders" data-n="orders"><span class="ti">📦</span>Orders</a><a href="#/me" data-n="me"><span class="ti">👤</span>Profile</a></nav>
+<nav class="tabs"><a href="#/home" data-n="home"><span class="ti">🏠</span>Home</a><a href="#/explore" data-n="explore"><span class="ti">🧭</span>Explore</a><a href="#/me" data-n="me"><span class="ti">👤</span>Profile</a></nav>
+<a class="fl fl-order" id="flo" href="#/orders" aria-label="Track my orders">🛵<span class="fc" id="flob">0</span></a><a class="fl fl-cart" href="#/cart" aria-label="Open cart">🛒<span class="fc" id="bd" style="display:none">0</span></a><button class="fl-ai" data-a="ai" aria-label="Ask JajiGo AI">🤖</button>
 <script>
 const S={t:null,u:null,q:'',cat:'',tab:'orders',mode:'login'};
 try{S.t=localStorage.getItem('t');S.u=JSON.parse(localStorage.getItem('u')||'null')}catch(e){}
@@ -92,7 +118,7 @@ return `<div class="pcard"><a href="#/product/${p.id}" class="pimg" style="text-
 const V={
 home:async()=>{const [c,p,s,m,bn]=await Promise.all([api('/shopping/categories'),api('/shopping/products'),api('/shopping/shops'),api('/morning').catch(()=>({products:[]})),api('/banners').catch(()=>({banners:[]}))]);
 SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);const g=greet(),nm=S.u&&S.u.full_name?', '+esc(S.u.full_name.split(' ')[0]):'';
-return `${sliderH(bn.banners)}<div style="margin:2px 0 12px"><div style="font-size:20px;font-weight:800">${g[0]} ${g[1]}${nm}</div><div class="mut">Welcome to JajiGo — Jaji, Kaduna</div></div>
+return `${sliderH(bn.banners)}<div class="jg-greeting"><div class="jg-greet-title">${g[0]} ${g[1]}${nm}</div><div class="jg-greet-sub">Welcome to JajiGo — Jaji, Kaduna</div></div>
 ${m.products.length?`<a href="#/morning" class="card" style="display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#fff8e8,#f3fff9);border-color:#f1e2b8"><b>🌅 Morning Rush</b><div class="mut">${m.products.length} fresh breakfast item${m.products.length==1?'':'s'} available. Tap to order.</div></a>`:''}
 <div class="near"><div style="font-weight:800">📍 Find what's near you</div><div class="mut" style="margin:3px 0 9px">Open Google Maps for places close to you.</div><div style="display:flex;gap:8px;flex-wrap:wrap">${[['🏪 Shops','shops near me'],['🏥 Hospitals','hospital near me'],['💊 Pharmacies','pharmacy near me'],['🍽️ Restaurants','restaurant near me']].map(x=>`<a class="chip" href="https://www.google.com/maps/search/${encodeURIComponent(x[1])}" target="_blank" rel="noopener">${x[0]}</a>`).join('')}</div></div>
 <h2 class="sec">🗂️ Categories</h2><div class="cats">${c.categories.map(x=>`<div class="cat" data-a="gocat" data-id="${x.id}"><div class="ci">${CI[x.name]||'🛍️'}</div><div class="cn">${esc(x.name)}</div></div>`).join('')}</div>
@@ -114,13 +140,13 @@ ${i>=0?`<div class="statusbar">${ST.map((s,k)=>`<div class="${k<=i?'on':''}"></d
 ${final?'':`<div class="card"><div class="mut">Your delivery code. Give it only when you receive your order:</div><div class="code">${esc(o.delivery_code)}</div></div>`}
 ${o.status==='pending'?`<button class="btn warn" data-a="cancel" data-id="${o.id}">Cancel order</button>`:''}
 ${o.status==='delivered'?`<button class="btn" data-a="complete" data-id="${o.id}">I received my order</button>`:''}
-`},
+ },
 me:async()=>{if(!S.t)return `<div class="card"><div class="tabs2"><button class="chip ${S.mode==='login'?'on':''}" data-a="mode" data-id="login">Log in</button><button class="chip ${S.mode==='signup'?'on':''}" data-a="mode" data-id="signup">Sign up</button></div>`+
 (S.mode==='login'?field('le','Email','you@email.com','email')+field('lp','Password','Your password','password')+'<button class="btn" data-a="login">Log in</button>'
 :field('sn','Full name','Your name')+field('se','Email','you@email.com','email')+field('sph','Phone','0803…','tel')+field('sp','Password','8+ characters','password')+'<button class="btn" data-a="signup">Create account</button>')+'</div>';
 const d=await api('/me');S.u=d.user;localStorage.setItem('u',JSON.stringify(d.user));const sh=d.businesses.find(b=>b.marketplace==='shopping');
 return `<div class="card row"><div class="vlogo">${esc((d.user.full_name||'?')[0].toUpperCase())}</div><div class="g1"><div class="vname">${esc(d.user.full_name)}</div><div class="vmeta">${esc(d.user.email)} · ${esc(d.user.phone)}</div></div>${pill(d.user.role)}</div>
-${d.user.role==='admin'?'<a class="btn" href="#/admin" style="margin-bottom:10px">🛡️ Admin dashboard</a><a class="btn sec" href="#/adminreviews" style="margin-bottom:10px">🛡️ Review moderation</a><a class="btn sec" href="#/adminmorning" style="margin-bottom:10px">🌅 Morning Rush</a><a class="btn sec" href="#/adminbanners" style="margin-bottom:10px">🖼️ Home slider</a>':''}<a class="btn sec" href="#/myreviews" style="margin-bottom:10px">⭐ My reviews</a>
+${d.user.role==='admin'?'<a class="btn" href="#/admin" style="margin-bottom:10px">🛡️ Admin dashboard</a><a class="btn sec" href="#/adminreviews" style="margin-bottom:10px">🛡️ Review moderation</a><a class="btn sec" href="#/adminmorning" style="margin-bottom:10px">🌅 Morning Rush</a><a class="btn sec" href="#/adminbanners" style="margin-bottom:10px">🖼️ Home slider</a>':''}<a class="btn sec" href="#/orders" style="margin-bottom:10px">📦 My orders</a><a class="btn sec" href="#/myreviews" style="margin-bottom:10px">⭐ My reviews</a>
 ${sh?`<div class="card"><div class="row"><b>🏪 ${esc(sh.name)}</b>${pill(sh.verification)}</div>${sh.rejection_reason?`<div class="mut">Reason: ${esc(sh.rejection_reason)}</div>`:''}${sh.verification==='approved'?'<a class="btn" href="#/seller" style="margin-top:10px">Open seller dashboard</a>':''}</div>`:
 `<div class="card"><h2 class="sec" style="margin-top:0">🏪 Sell on JajiGo</h2>${field('bn','Shop name')}<div class="field"><label>What do you sell?</label><textarea id="bd2"></textarea></div>${field('ba','Shop address')}${field('bp','Shop phone','','tel')}<div class="field"><label><input type="checkbox" id="bdl"> I deliver orders</label></div><button class="btn" data-a="reg">Apply as a seller</button><div class="mut" style="margin-top:8px">An admin reviews every shop before it goes live. Service-provider registration is coming soon.</div></div>`}
 <button class="btn sec" data-a="out">Log out</button>`},
@@ -141,7 +167,7 @@ return {pending:b('accepted','Accept')+b('rejected','Reject','warn'),accepted:b(
 
 const A={
 search:()=>{S.q=val('q');if(location.hash.indexOf('#/explore')!==0)location.hash='#/explore';else route()},cat:(id)=>{S.cat=id;route()},tab:(id)=>{S.tab=id;route()},mode:(id)=>{S.mode=id;route()},
-add:async id=>{if(need())return;const c=await api('/shopping/cart');const q=((c.items.find(i=>i.product_id===id)||{}).quantity||0)+1;await api('/shopping/cart',{method:'PUT',body:{product_id:id,quantity:q}});toast('Added to cart');badge()},
+add:async id=>{if(need())return;const c=await api('/shopping/cart');const q=((c.items.find(i=>i.product_id===id)||{}).quantity||0)+1;await api('/shopping/cart',{method:'PUT',body:{product_id:id,quantity:q}});toast('Added to cart');badge(true)},
 qty:async(id,el)=>{await api('/shopping/cart',{method:'PUT',body:{product_id:id,quantity:Number(el.dataset.q)}});route()},
 order:async()=>{const f=val('ful');const r=await api('/shopping/orders',{method:'POST',body:{fulfilment:f,delivery_address:f==='delivery'?val('addr'):undefined}});toast('Order placed!');location.hash='#/order/'+r.orders[0].id},
 cancel:async id=>{if(!confirm('Cancel this order?'))return;await api('/shopping/orders/'+id+'/cancel',{method:'POST'});route()},
@@ -261,13 +287,23 @@ bntoggle:async(id,el)=>{await api('/admin/banners/'+id,{method:'PATCH',body:{is_
 bndel:async id=>{if(!confirm('Delete this banner?'))return;await api('/admin/banners/'+id,{method:'DELETE'});route()},
 bnmove:async(id,el)=>{const l=S.bn.slice(),i=l.findIndex(x=>x.id===id),j=i+Number(el.dataset.d);if(j<0||j>=l.length)return;[l[i],l[j]]=[l[j],l[i]];for(let k=0;k<l.length;k++)if(l[k].sort_order!==k+1)await api('/admin/banners/'+l[k].id,{method:'PATCH',body:{sort_order:k+1}});route()}
 });
+
+Object.assign(V,{notifications:async()=>{if(!S.t)return need()||'';const d=await api('/notifications');if(d.unread)api('/notifications/read',{method:'POST'}).then(()=>badge(true)).catch(()=>{});
+return `<h2 class="sec" style="margin-top:2px">🔔 Notifications</h2>`+(d.notifications.length?d.notifications.map(n=>`<div class="card" style="${n.is_read?'':'border-color:var(--g);background:var(--g3)'}"><b>${esc(n.title)}</b>${n.body?`<div class="mut">${esc(n.body)}</div>`:''}<div class="mut" style="font-size:11.5px;margin-top:3px">${new Date(n.created_at).toLocaleString()}</div></div>`).join(''):empty('🔔','No notifications yet'))}});
+Object.assign(A,{bell:()=>{location.hash='#/notifications'},lang:()=>toast('Hausa and Pidgin are coming soon'),ai:()=>toast('JajiGo AI assistant is coming soon')});
 function sess(r){S.t=r.access_token;S.u=r.user;localStorage.setItem('t',S.t);localStorage.setItem('r',r.refresh_token);localStorage.setItem('u',JSON.stringify(r.user));location.hash='#/home';route()}
-async function badge(){const e=document.getElementById('bd');if(!S.t){e.textContent='';return}try{const c=await api('/shopping/cart');const n=c.items.reduce((s,i)=>s+i.quantity,0);e.textContent=n?' ('+n+')':''}catch(x){}}
+let BC={t:0};
+async function badge(force){const cb=document.getElementById('bd'),ob=document.getElementById('flob'),fo=document.getElementById('flo'),nb=document.getElementById('nb');
+if(!S.t){cb.style.display='none';fo.style.display='none';nb.style.display='none';return}
+if(!force&&Date.now()-BC.t<20000)return;BC.t=Date.now();
+try{const c=await api('/shopping/cart');const n=c.items.reduce((s,i)=>s+i.quantity,0);cb.textContent=n;cb.style.display=n?'flex':'none'}catch(x){}
+try{const o=await api('/shopping/orders');const a=o.orders.filter(x=>!['completed','cancelled','rejected'].includes(x.status)).length;ob.textContent=a;fo.style.display=a?'flex':'none'}catch(x){}
+try{const n=await api('/notifications');nb.textContent=n.unread;nb.style.display=n.unread?'flex':'none'}catch(x){}}
 async function route(){clearInterval(SL.t);const[p,id]=location.hash.slice(2).split('/');const k=V[p]?p:'home';
-document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.n===({shop:'home',product:'home',morning:'home',order:'orders',review:'orders',seller:'me',admin:'me',reviewedit:'me',myreviews:'me',adminreviews:'me',adminmorning:'me',adminbanners:'me'}[k]||k)));
-document.getElementById('sb').style.display=(k==='home'||k==='explore')?'flex':'none';
-app.innerHTML='<div class="spin"></div>';try{app.innerHTML=await V[k](id);const so=document.getElementById('rsort');if(so)so.value=S.rsort;fillRatings();if(k==='home')startSlider()}catch(e){app.innerHTML=empty('⚠️',e.message)}badge()}
+document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.n===({shop:'home',product:'home',morning:'home',order:'me',orders:'me',review:'me',seller:'me',admin:'me',reviewedit:'me',myreviews:'me',adminreviews:'me',adminmorning:'me',adminbanners:'me'}[k]||k)));
+document.getElementById('sb').style.display=(k==='home'||k==='explore')?'flex':'none';document.querySelector('.aibtn').style.display=k==='home'?'flex':'none';
+app.innerHTML='<div class="spin"></div>';try{app.innerHTML=await V[k](id);const so=document.getElementById('rsort');if(so)so.value=S.rsort;fillRatings();if(k==='home')startSlider()}catch(e){app.innerHTML=empty('⚠️',e.message)}badge(['cart','orders','order','notifications','me'].includes(k))}
 document.addEventListener('click',async e=>{const el=e.target.closest('[data-a]');if(!el)return;el.disabled=true;try{await A[el.dataset.a](el.dataset.id,el)}catch(x){toast(x.message)}el.disabled=false});
 document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')A.search()});
 window.addEventListener('hashchange',route);route();
-</script></body></html>
+</script></body></html> 
