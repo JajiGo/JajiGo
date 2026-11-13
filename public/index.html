@@ -87,6 +87,36 @@ header,main{position:relative;z-index:1}body{padding-bottom:calc(86px + env(safe
 .sbx{border:1.5px solid var(--line);box-shadow:0 8px 24px rgba(14,122,79,.07);margin-bottom:14px}
 main.home{padding-top:0}main:not(.home){padding-top:calc(14px + env(safe-area-inset-top,0px))}
 .fl-cart{display:none}
+
+/* ===== Home polish ===== */
+html{background:#f3f9f5}body{background:#f3f9f5}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(520px 340px at 105% 6%,rgba(34,197,94,.16),transparent 70%),radial-gradient(460px 320px at -8% 42%,rgba(244,181,63,.15),transparent 70%),radial-gradient(520px 360px at 100% 90%,rgba(14,122,79,.12),transparent 72%)}
+.stick{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;margin:0 -14px;padding:8px 14px 10px;background:linear-gradient(180deg,rgba(243,249,245,.97) 78%,rgba(243,249,245,0))}
+.stick .sbx{margin-bottom:0}
+.sh{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 10px}.sh h2{font-size:17px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+.sh h2::before{content:"";width:4px;height:18px;border-radius:3px;background:linear-gradient(#34d399,#0e7a4f)}.sh a{font-size:13px;font-weight:700;color:var(--g);text-decoration:none}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:2px 0 4px}
+.qb{background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 4px 9px;text-align:center;text-decoration:none;color:var(--ink);box-shadow:0 8px 22px rgba(14,122,79,.07);font-size:11.5px;font-weight:700}
+.qb:active{transform:scale(.96)}.qb .qi{display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin:0 auto 5px;border-radius:14px;font-size:22px;background:linear-gradient(135deg,#e7f4ee,#fff);border:1px solid #d3eadc}
+.catrow{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:2px 14px 8px}.catrow::-webkit-scrollbar,.hrow2::-webkit-scrollbar{display:none}
+.catc{flex:none;width:70px;text-align:center;cursor:pointer}.catc .ci{width:60px;height:60px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:27px;background:linear-gradient(135deg,#fff,#e7f4ee);border:1px solid #d3eadc;box-shadow:0 6px 16px rgba(14,122,79,.09)}
+.catc:active .ci{transform:scale(.93)}.catc .cn{font-size:11.5px;font-weight:600;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mrcard{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#fff3d6,#e8fff1);border:1px solid #f1e2b8;border-radius:18px;padding:14px;margin:16px 0 0;text-decoration:none;color:var(--ink);box-shadow:0 8px 22px rgba(244,181,63,.16)}
+.mrgo{background:var(--g);color:#fff;font-weight:700;font-size:13px;border-radius:999px;padding:8px 13px;flex:none}
+.hrow2{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:2px 14px 8px}
+.scard{flex:none;width:158px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:var(--ink);box-shadow:0 8px 22px rgba(14,122,79,.08)}
+.scov{height:62px;position:relative;overflow:hidden}.scov img{width:100%;height:100%;object-fit:cover;display:block}
+.scard .slg{margin:-26px 0 0 12px;position:relative}.scard .vlogo{border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.scard .sbody{padding:6px 12px 12px}.sname{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.smeta{font-size:12px;color:var(--mut);margin-top:2px}
+.grid2{gap:12px}.pwrap{position:relative}
+.pimg{aspect-ratio:1/1;height:auto!important;position:relative;font-size:44px;background:linear-gradient(135deg,#f3f0e8,#e7f4ee)}
+.pbadge{position:absolute;left:8px;top:8px;background:var(--o);color:#fff;font-size:11px;padding:3px 8px;border-radius:999px}
+.pleft{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;font-size:10.5px;padding:3px 8px;border-radius:999px}
+.padd{position:absolute;right:8px;bottom:-16px;width:38px;height:38px;border-radius:50%;border:3px solid #fff;background:linear-gradient(135deg,#16a34a,#0e7a4f);color:#fff;font-size:22px;line-height:1;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(14,122,79,.35);cursor:pointer;padding:0}
+.padd:active{transform:scale(.9)}
+.pcard{overflow:visible;border-radius:16px}.pcard .pimg{border-radius:16px 16px 0 0;overflow:hidden}.pcard .pbody{padding:14px 11px 12px}
+.pname{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:inherit;text-decoration:none;min-height:36px;font-size:14px;font-weight:700;line-height:1.28}
+.pprice s{color:var(--mut);font-weight:500;font-size:12px;margin-left:3px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}.slide img{transition:none}}
 </style></head><body>
 <div class="jg-ambient-icons" aria-hidden="true"><span class="jg-float-icon jg-fi1">🛍️</span><span class="jg-float-icon jg-fi2">🍔</span><span class="jg-float-icon jg-fi3">🚗</span><span class="jg-float-icon jg-fi4">✂️</span><span class="jg-float-icon jg-fi5">🔧</span><span class="jg-float-icon jg-fi6">🧺</span><span class="jg-float-icon jg-fi7">📦</span><span class="jg-float-icon jg-fi8">🛵</span></div>
@@ -123,18 +153,21 @@ async function compress(file,mx){const im=await createImageBitmap(file),k=Math.m
 async function upload(file){const b=await compress(file);const s=await api('/uploads/sign',{method:'POST',body:{bucket:'product-images',filename:'p.jpg'}});const fd=new FormData();fd.append('cacheControl','3600');fd.append('',b);const r=await fetch(s.signed_url,{method:'PUT',body:fd});if(!r.ok)throw new Error('Image upload failed');return s.public_url}
 
 let SHOPS={};
+const secH=(t,link,txt)=>`<div class="sh"><h2>${t}</h2>${link?`<a href="${link}">${txt||'See all'} ›</a>`:''}</div>`;
 const prods=l=>l.length?`<div class="grid2">${l.map(p=>{const i=(p.product_images||[]).sort((a,b)=>a.sort_order-b.sort_order)[0];const sh=SHOPS[p.business_id];
-return `<div class="pcard"><a href="#/product/${p.id}" class="pimg" style="text-decoration:none">${i?`<img loading="lazy" src="${esc(i.image_url)}" alt="">`:'🛍️'}</a><div class="pbody"><a href="#/product/${p.id}" class="pname" style="display:block;color:inherit;text-decoration:none">${esc(p.name)}</a><div class="psub">${esc(sh?sh.name:'')}</div><div class="psub" data-rp="${p.id}" style="min-height:16px"></div><div class="pprice">${p.discount_percent?`<s style="color:var(--mut);font-weight:500;font-size:12px">${naira(p.price_kobo)}</s> `:''}${naira(p.final_price_kobo)}</div><button class="btn sm" style="width:100%" data-a="add" data-id="${p.id}">Add to cart</button></div></div>`}).join('')}</div>`:empty('📦','No products found');
+return `<div class="pcard"><div class="pwrap"><a href="#/product/${p.id}" class="pimg">${i?`<img loading="lazy" src="${esc(i.image_url)}" alt="">`:'<span>🛍️</span>'}${p.discount_percent?`<b class="pbadge">-${p.discount_percent}%</b>`:''}${p.stock>0&&p.stock<=3?`<b class="pleft">Only ${p.stock} left</b>`:''}</a><button class="padd" data-a="add" data-id="${p.id}" aria-label="Add ${esc(p.name)} to cart">+</button></div><div class="pbody"><a href="#/product/${p.id}" class="pname">${esc(p.name)}</a><div class="psub">${esc(sh?sh.name:'')}</div><div class="psub" data-rp="${p.id}" style="min-height:16px"></div><div class="pprice">${naira(p.final_price_kobo)}${p.discount_percent?`<s>${naira(p.price_kobo)}</s>`:''}</div></div></div>`}).join('')}</div>`:empty('📦','No products found');
 
 const V={
-home:async()=>{const [c,p,s,m,bn]=await Promise.all([api('/shopping/categories'),api('/shopping/products'),api('/shopping/shops'),api('/morning').catch(()=>({products:[]})),api('/banners').catch(()=>({banners:[]}))]);
+home:async()=>{const [c,p,s,m,bn]=await Promise.all([api('/shopping/categories'),api('/shopping/products'),api('/shopping/shops'),api('/morning').catch(()=>({products:[],window:{end:''}})),api('/banners').catch(()=>({banners:[]}))]);
 SHOPS={};s.shops.forEach(x=>SHOPS[x.id]=x);const g=greet(),nm=S.u&&S.u.full_name?', '+esc(S.u.full_name.split(' ')[0]):'';
+const qa=[['🌅','Breakfast','#/morning'],['📍','Near me','https://www.google.com/maps/search/shops%20near%20me'],['📦','My orders','#/orders'],['🧭','Explore','#/explore']].map(x=>`<a class="qb" href="${x[2]}" ${x[2].startsWith('http')?'target="_blank" rel="noopener"':''}><div class="qi">${x[0]}</div>${x[1]}</a>`).join('');
+const mr=m.products.length?`<a href="#/morning" class="mrcard"><div style="font-size:34px">🌅</div><div class="g1"><div style="font-weight:800;font-size:16px">Morning Rush</div><div class="mut" style="color:#6b5a1f">Fresh breakfast until ${esc(m.window.end)} · ${m.products.length} item${m.products.length==1?'':'s'}</div></div><span class="mrgo">Order ›</span></a>`:'';
 return `${sliderH(bn.banners)}<div class="gline"><div><div class="gt">${g[0]} ${g[1]}${nm}</div><div class="gs">What would you like today?</div></div><span class="gloc">📍 Jaji, Kaduna</span></div>${searchH()}
-${m.products.length?`<a href="#/morning" class="card" style="display:block;text-decoration:none;color:inherit;background:linear-gradient(135deg,#fff8e8,#f3fff9);border-color:#f1e2b8"><b>🌅 Morning Rush</b><div class="mut">${m.products.length} fresh breakfast item${m.products.length==1?'':'s'} available. Tap to order.</div></a>`:''}
-<div class="near"><div style="font-weight:800">📍 Find what's near you</div><div class="mut" style="margin:3px 0 9px">Open Google Maps for places close to you.</div><div style="display:flex;gap:8px;flex-wrap:wrap">${[['🏪 Shops','shops near me'],['🏥 Hospitals','hospital near me'],['💊 Pharmacies','pharmacy near me'],['🍽️ Restaurants','restaurant near me']].map(x=>`<a class="chip" href="https://www.google.com/maps/search/${encodeURIComponent(x[1])}" target="_blank" rel="noopener">${x[0]}</a>`).join('')}</div></div>
-<h2 class="sec">🗂️ Categories</h2><div class="cats">${c.categories.map(x=>`<div class="cat" data-a="gocat" data-id="${x.id}"><div class="ci">${CI[x.name]||'🛍️'}</div><div class="cn">${esc(x.name)}</div></div>`).join('')}</div>
-<h2 class="sec">⭐ Popular shops</h2>${s.shops.length?s.shops.slice(0,6).map(shopCard).join(''):empty('🏪','No shops yet')}
-<h2 class="sec">🔥 Recommended for you</h2>${prods(p.products.slice(0,8))}<a class="btn sec" href="#/explore" style="margin-top:4px">See all products</a>`},
+<div class="qa">${qa}</div>
+${secH('Categories','#/explore','All')}<div class="catrow">${c.categories.map(x=>`<div class="catc" data-a="gocat" data-id="${x.id}"><div class="ci">${CI[x.name]||'🛍️'}</div><div class="cn">${esc(x.name)}</div></div>`).join('')}</div>
+${mr}
+${secH('Popular shops','#/explore','All')}${s.shops.length?`<div class="hrow2">${s.shops.slice(0,8).map(shopCardH).join('')}</div>`:`<div class="card" style="text-align:center"><div style="font-size:34px">🏪</div><b>Shops are joining soon</b><div class="mut" style="margin:4px 0 10px">Have a shop in Jaji? Be one of the first to sell on JajiGo.</div><a class="btn sm" href="#/me" style="display:inline-flex">Become a seller</a></div>`}
+${secH('Recommended for you','#/explore','See all')}${prods(p.products.slice(0,8))}<div style="height:6px"></div>`},
 shop:async id=>{const d=await api('/shopping/shops/'+id);SHOPS[d.shop.id]=d.shop;return `<a href="#/home" class="mut" style="text-decoration:none;font-weight:700;color:var(--g2)">‹ Back</a><div class="vcard" style="margin-top:8px">${logo(d.shop)}<div class="g1"><div class="vname">${esc(d.shop.name)}</div><div class="vmeta">${esc(d.shop.description||'')}</div><div class="vmeta">${esc(d.shop.address||'')}</div></div></div>${prods(d.products)}`},
 cart:async()=>{if(!S.t)return need()||'';const c=await api('/shopping/cart');if(!c.items.length)return empty('🛒','Your cart is empty');
 return `<h2 class="sec" style="margin-top:2px">🛒 Your cart</h2>`+c.items.map(i=>`<div class="card row"><div class="g1"><div class="vname">${esc(i.name)}</div><div class="vmeta">${naira(i.unit_price_kobo)} ${i.in_stock?'':'<span style="color:var(--o)">· not enough stock</span>'}</div></div><div class="stepper"><button data-a="qty" data-id="${i.product_id}" data-q="${i.quantity-1}">−</button><span>${i.quantity}</span><button data-a="qty" data-id="${i.product_id}" data-q="${i.quantity+1}">+</button></div></div>`).join('')+
@@ -194,6 +227,7 @@ delp:async id=>{if(!confirm('Delete this product?'))return;await api('/seller/pr
 ver:async(id,el)=>{const s=el.dataset.s,b={status:s};if(s==='rejected'){b.reason=prompt('Reason for rejecting');if(!b.reason)return}await api('/admin/businesses/'+id+'/verification',{method:'PATCH',body:b});route()}
 };
 
+const shopCardH=x=>`<a class="scard" href="#/shop/${x.id}"><div class="scov" style="background:linear-gradient(135deg,${COL[(x.name||'').length%6]},#0a5c3b)">${x.cover_url?`<img src="${esc(x.cover_url)}" alt="" loading="lazy">`:''}</div><div class="slg">${logo(x)}</div><div class="sbody"><div class="sname">${esc(x.name)}</div><div class="smeta" data-rs="${x.id}" style="min-height:16px"></div><div class="smeta">${x.offers_delivery?'🛵 Delivery':'🏪 Pickup'}</div></div></a>`;
 const greet=()=>{const h=new Date().getHours();return h>=5&&h<12?['🌅','Good morning']:h<17?['☀️','Good afternoon']:h<21?['🌇','Good evening']:['🌙','Good night']};
 const shopCard=x=>`<a class="vcard" href="#/shop/${x.id}">${logo(x)}<div class="g1"><div class="vname">${esc(x.name)}</div><div class="vmeta">${esc(x.address||'Jaji')} · ${x.offers_delivery?'Delivery':'Pickup'}</div><div class="vmeta" data-rs="${x.id}" style="min-height:16px"></div></div></a>`;
 S.price='';S.view='products';
@@ -268,7 +302,7 @@ const sliderH=b=>{const n=b.length||1;const dots=`<div class="sdots" id="dots">$
 const body=!b.length?`<div class="slt" style="background:linear-gradient(135deg,#e7f4ee,#fff);flex-direction:column;justify-content:center;padding:22px"><div style="font-size:26px;font-weight:800;color:var(--g2)">Shop local in Jaji</div><div class="mut" style="margin-top:4px">Fresh food, groceries and more, delivered to you.</div></div>`:
 `<div class="slt" id="slt">${b.map((x,k)=>{const im=`<img src="${esc(x.image_url)}" alt="${esc(x.title||'')}" ${k?'loading="lazy"':''}>`;return x.product_id?`<a class="slide" href="#/product/${x.product_id}">${im}</a>`:`<div class="slide">${im}</div>`}).join('')}</div>`;
 return `<div class="sl full">${body}<div class="sblogo"><div class="logo"><span class="j">Jaji</span><span class="go">Go</span></div></div>${bellH}</div>${dots}`};
-const searchH=()=>`<div class="searchbar sbx"><span>🔍</span><input id="q" type="search" placeholder="What are you looking for?" value="${esc(S.q)}"></div>`;
+const searchH=()=>`<div class="stick"><div class="searchbar sbx"><span>🔍</span><input id="q" type="search" placeholder="What are you looking for?" value="${esc(S.q)}"></div></div>`;
 function startSlider(){clearInterval(SL.t);const t=document.getElementById('slt');if(!t)return;const sl=[...t.children],dots=[...document.querySelectorAll('#dots i')];
 const set=i=>{SL.i=i;sl.forEach((s,k)=>s.classList.toggle('on',k===i));dots.forEach((d,k)=>d.classList.toggle('on',k===i))};set(0);
 t.addEventListener('scroll',()=>{const i=Math.round(t.scrollLeft/t.clientWidth);if(i!==SL.i)set(i)},{passive:true});if(sl.length<2)return;
