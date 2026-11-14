@@ -62,8 +62,28 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
     if (!p) throw fail(404, 'Payment not found');
     if (p.status === 'success') return res.json({ status: 'success', order_id: p.order_id });
     const r = await confirmAndSettle(ref);
+    console.log('payment verify', ref, r.status);
     const ok = ['settled', 'already_settled', 'success_needs_refund'].includes(r.status);
     res.json({ status: ok ? 'success' : r.status, order_id: p.order_id, note: r.status === 'success_needs_refund' ? 'Your order was cancelled. Contact support for a refund.' : undefined });
+  }));
+
+  // ---------- Self-check: if the customer paid but the return/webhook was missed, settle it when the order is opened ----------
+  app.post('/api/payments/check-order/:orderId', requireAuth, limiter, wrap(async (req, res) => {
+    const id = uuid(req.params.orderId);
+    const { data: o } = await db.from('orders').select('id, payment_status').eq('id', id).eq('customer_id', req.user.id).maybeSingle();
+    if (!o) throw fail(404, 'Order not found');
+    if (o.payment_status === 'paid') return res.json({ status: 'paid' });
+    const since = new Date(Date.now() - 48 * 3600000).toISOString();
+    const { data: list } = await db.from('payment_records').select('reference').eq('order_id', id).eq('status', 'initialized').gte('created_at', since).order('created_at', { ascending: false }).limit(3);
+    let last = 'none';
+    for (const p of list || []) {
+      try {
+        const r = await confirmAndSettle(p.reference);
+        last = r.status;
+        if (['settled', 'already_settled', 'success_needs_refund'].includes(r.status)) return res.json({ status: 'paid' });
+      } catch (e) { console.error('check-order failed', p.reference, e.message); last = 'error'; }
+    }
+    res.json({ status: last });
   }));
 
   // ---------- Paystack calls us (signature checked on the raw request body) ----------
