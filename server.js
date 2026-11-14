@@ -22,7 +22,7 @@ app.use(helmet({ contentSecurityPolicy: { directives: {
   imgSrc: ["'self'", 'data:', 'blob:', SUPABASE_URL], connectSrc: ["'self'", SUPABASE_URL],
 } } }));
 app.use(cors({ origin: FRONTEND_ORIGIN ? FRONTEND_ORIGIN.split(',') : false }));
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: '100kb', verify: (req, res, buf) => { req.rawBody = buf; } })); // rawBody is needed to check Paystack's signature
 
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true });
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -146,6 +146,7 @@ app.patch('/api/admin/businesses/:id/verification', requireAuth, requireRole('ad
 }));
 
 // ---------- Shopping marketplace (Step 3) ----------
+require('./payments')({ app, db, requireAuth, requireRole, wrap, validate });
 require('./extras')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
 require('./reviews')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
