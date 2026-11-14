@@ -29,7 +29,12 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
     if (d.reference !== reference) throw fail(400, 'Reference mismatch');
     if (d.status === 'success') {
       if (d.currency !== 'NGN') { await log(null, 'payment_wrong_currency', 'payment_records', reference, { currency: d.currency }); return { status: 'failed' }; }
-      const { data, error } = await db.rpc('settle_payment', { p_reference: reference, p_amount: d.amount, p_channel: d.channel || null, p_raw: d });
+      // If Paystack adds its fee on top, data.amount is bigger than the order price. The order price we asked for
+      // comes back as requested_amount. The customer must have paid at least that; underpayment is refused by the database.
+      const charged = Number(d.amount);
+      const requested = d.requested_amount != null ? Number(d.requested_amount) : charged;
+      const effective = charged >= requested ? requested : charged;
+      const { data, error } = await db.rpc('settle_payment', { p_reference: reference, p_amount: effective, p_channel: d.channel || null, p_raw: d });
       if (error) throw error;
       return data;
     }
