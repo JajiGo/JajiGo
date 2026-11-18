@@ -48,15 +48,17 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
   app.post('/api/payments/initialize', requireAuth, limiter, wrap(async (req, res) => {
     const b = validate(z.object({ order_id: z.string().uuid() }), req.body);
     if ((await paymentMode()) !== 'jajigo_collects') throw fail(400, 'This marketplace collects payment directly. Pay the shop on delivery.');
-    const { data: o } = await db.from('orders').select('id, status, payment_status, total_kobo').eq('id', b.order_id).eq('customer_id', req.user.id).maybeSingle();
+    const { data: o } = await db.from('orders').select('id, status, payment_status, total_kobo, credit_applied_kobo').eq('id', b.order_id).eq('customer_id', req.user.id).maybeSingle();
     if (!o) throw fail(404, 'Order not found');
     if (o.payment_status === 'paid') throw fail(400, 'This order is already paid');
     if (['cancelled', 'rejected', 'completed'].includes(o.status)) throw fail(400, 'This order can no longer be paid');
+    const cash = o.total_kobo - (o.credit_applied_kobo || 0);   // wallet credit already covers the rest
+    if (cash <= 0) throw fail(400, 'Your wallet credit already covers this order.');
     const reference = 'JG' + Date.now().toString(36) + crypto.randomBytes(4).toString('hex');
-    const { error } = await db.from('payment_records').insert({ reference, marketplace: 'shopping', order_id: o.id, customer_id: req.user.id, amount_kobo: o.total_kobo, mode: 'jajigo_collects' });
+    const { error } = await db.from('payment_records').insert({ reference, marketplace: 'shopping', order_id: o.id, customer_id: req.user.id, amount_kobo: cash, mode: 'jajigo_collects' });
     if (error) throw error;
     const d = await paystack('/transaction/initialize', { method: 'POST', body: JSON.stringify({
-      email: req.user.email, amount: o.total_kobo, currency: 'NGN', reference, callback_url: APP_URL + '/', metadata: { order_id: o.id } }) });
+      email: req.user.email, amount: cash, currency: 'NGN', reference, callback_url: APP_URL + '/', metadata: { order_id: o.id } }) });
     res.json({ authorization_url: d.authorization_url, reference });
   }));
 
@@ -66,10 +68,89 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
     const { data: p } = await db.from('payment_records').select('reference, status, order_id').eq('reference', ref).eq('customer_id', req.user.id).maybeSingle();
     if (!p) throw fail(404, 'Payment not found');
     if (p.status === 'success') return res.json({ status: 'success', order_id: p.order_id });
+    if (p.status === 'refunded') return res.json({ status: 'refunded', order_id: p.order_id, note: 'This payment was returned to your JajiGo Wallet.' });
     const r = await confirmAndSettle(ref);
     console.log('payment verify', ref, r.status);
-    const ok = ['settled', 'already_settled', 'success_needs_refund'].includes(r.status);
-    res.json({ status: ok ? 'success' : r.status, order_id: p.order_id, note: r.status === 'success_needs_refund' ? 'Your order was cancelled. Contact support for a refund.' : undefined });
+    if (r.status === 'refunded_to_wallet') return res.json({ status: 'refunded', order_id: p.order_id, note: 'We could not apply this payment to your order, so it was added to your JajiGo Wallet.' });
+    const ok = ['settled', 'already_settled'].includes(r.status);
+    res.json({ status: ok ? 'success' : r.status, order_id: p.order_id });
+  }));
+
+  // ---------- JajiGo Wallet credit on an order (partial or full) ----------
+  async function applyCredit(orderId, userId, use) {
+    const { data, error } = await db.rpc('apply_order_credit', { p_order: orderId, p_customer: userId, p_use: use });
+    if (error) throw fail(400, /cannot take credit/.test(error.message) ? 'Credit can only be changed on an unpaid, open order.' : 'Could not apply your wallet credit');
+    let paid = false;
+    if (use && data.cash_due_kobo === 0) {            // credit covers everything: settle without a card
+      const r = await db.rpc('settle_credit_order', { p_order: orderId, p_customer: userId });
+      if (r.error) throw fail(400, 'Could not complete the wallet payment');
+      paid = true;
+    }
+    return { credit_kobo: data.credit_kobo, cash_due_kobo: data.cash_due_kobo, paid };
+  }
+  app.post('/api/orders/:id/credit', requireAuth, limiter, wrap(async (req, res) => {
+    const b = validate(z.object({ use: z.boolean() }), req.body);
+    if ((await paymentMode()) !== 'jajigo_collects') throw fail(400, 'Wallet credit is only used for online payments.');
+    res.json(await applyCredit(uuid(req.params.id), req.user.id, b.use));
+  }));
+  // at checkout: if the customer ticked "use my wallet", apply it to the orders that were just created
+  app.post('/api/shopping/orders', requireAuth, (req, res, next) => {
+    if (!(req.body && req.body.use_credit === true)) return next();
+    const send = res.json.bind(res);
+    res.json = (body) => {
+      (async () => {
+        try {
+          if (body && Array.isArray(body.orders) && (await paymentMode()) === 'jajigo_collects') {
+            body.credit = [];
+            for (const o of body.orders) {
+              try { body.credit.push(await applyCredit(o.id, req.user.id, true)); }
+              catch (e) { body.credit.push({ credit_kobo: 0, cash_due_kobo: o.total_kobo, paid: false }); }
+            }
+          }
+        } catch (e) { console.error('apply credit failed', e.message); }
+        send(body);
+      })();
+      return res;
+    };
+    next();
+  });
+
+  // ---------- Customer JajiGo Wallet ----------
+  app.get('/api/wallet/me', requireAuth, wrap(async (req, res) => {
+    const { data: w } = await db.from('wallet_accounts').select('id, available_kobo').eq('owner_id', req.user.id).is('business_id', null).maybeSingle();
+    const { data: s } = await db.from('platform_settings').select('value').eq('key', 'min_withdrawal_kobo').maybeSingle();
+    let tx = [], wd = [];
+    if (w) {
+      tx = (await db.from('wallet_transactions').select('kind, amount_kobo, note, created_at').eq('wallet_id', w.id).order('created_at', { ascending: false }).limit(30)).data || [];
+      wd = (await db.from('withdrawal_requests').select('id, amount_kobo, bank_name, account_number, status, admin_note, created_at').eq('wallet_id', w.id).order('created_at', { ascending: false }).limit(10)).data || [];
+    }
+    res.json({ available_kobo: w ? w.available_kobo : 0, transactions: tx, min_withdrawal_kobo: Number(s && s.value) || 50000,
+      withdrawals: wd.map((x) => ({ ...x, account_number: '••••' + String(x.account_number).slice(-4) })) });
+  }));
+  app.post('/api/wallet/withdraw', requireAuth, limiter, wrap(async (req, res) => {
+    const b = validate(z.object({ amount_kobo: z.number().int().positive(), bank_name: z.string().trim().min(2).max(60),
+      account_number: z.string().regex(/^\d{10}$/, 'Account number must be 10 digits'), account_name: z.string().trim().min(3).max(100) }), req.body);
+    const { data, error } = await db.rpc('request_withdrawal', { p_user: req.user.id, p_amount: b.amount_kobo, p_bank_name: b.bank_name, p_bank_code: null, p_acct: b.account_number, p_acct_name: b.account_name });
+    if (error) {
+      const m = error.message || '';
+      throw fail(400, m.includes('min_withdrawal') ? 'That is below the minimum withdrawal.' : m.includes('insufficient_balance') ? 'You do not have that much in your wallet.'
+        : m.includes('too_many_pending') ? 'You already have 3 withdrawals waiting. Please wait until they are paid.' : 'Could not request the withdrawal');
+    }
+    res.status(201).json({ id: data });
+  }));
+
+  // ---------- Admin: withdrawals ----------
+  app.get('/api/admin/withdrawals', requireAuth, requireRole('admin'), wrap(async (req, res) => {
+    const { data } = await db.from('withdrawal_requests').select('id, amount_kobo, bank_name, account_number, account_name, status, admin_note, created_at, paid_at, wallet_accounts(profiles(full_name, phone))')
+      .order('created_at', { ascending: false }).limit(100);
+    res.json({ withdrawals: data || [] });
+  }));
+  app.patch('/api/admin/withdrawals/:id', requireAuth, requireRole('admin'), wrap(async (req, res) => {
+    const b = validate(z.object({ action: z.enum(['paid', 'reject']), note: z.string().trim().max(300).optional() }), req.body);
+    if (b.action === 'reject' && !b.note) throw fail(400, 'A reason is required');
+    const { error } = await db.rpc('decide_withdrawal', { p_id: uuid(req.params.id), p_admin: req.user.id, p_action: b.action, p_note: b.note || null });
+    if (error) throw fail(400, /already_decided/.test(error.message) ? 'This withdrawal was already decided.' : 'Could not update the withdrawal');
+    res.json({ ok: true });
   }));
 
   // ---------- Self-check: if the customer paid but the return/webhook was missed, settle it when the order is opened ----------
@@ -85,7 +166,8 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
       try {
         const r = await confirmAndSettle(p.reference);
         last = r.status;
-        if (['settled', 'already_settled', 'success_needs_refund'].includes(r.status)) return res.json({ status: 'paid' });
+        if (['settled', 'already_settled'].includes(r.status)) return res.json({ status: 'paid' });
+        if (r.status === 'refunded_to_wallet') return res.json({ status: 'refunded' });
       } catch (e) { console.error('check-order failed', p.reference, e.message); last = 'error'; }
     }
     res.json({ status: last });
