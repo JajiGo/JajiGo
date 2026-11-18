@@ -139,9 +139,23 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
     res.status(201).json({ id: data });
   }));
 
+  // ---------- Shop owner withdraws earnings that have been released (delivered orders only) ----------
+  app.post('/api/wallet/seller-withdraw', requireAuth, limiter, wrap(async (req, res) => {
+    const b = validate(z.object({ amount_kobo: z.number().int().positive(), bank_name: z.string().trim().min(2).max(60),
+      account_number: z.string().regex(/^\d{10}$/, 'Account number must be 10 digits'), account_name: z.string().trim().min(3).max(100) }), req.body);
+    const { data, error } = await db.rpc('request_seller_withdrawal', { p_user: req.user.id, p_amount: b.amount_kobo, p_bank_name: b.bank_name, p_acct: b.account_number, p_acct_name: b.account_name });
+    if (error) {
+      const m = error.message || '';
+      throw fail(400, m.includes('no_approved_shop') ? 'Only approved shops can withdraw.' : m.includes('min_withdrawal') ? 'That is below the minimum withdrawal.'
+        : m.includes('insufficient_balance') ? 'You can only withdraw earnings from delivered orders. That amount is not available yet.'
+        : m.includes('too_many_pending') ? 'You already have 3 withdrawals waiting. Please wait until they are paid.' : 'Could not request the withdrawal');
+    }
+    res.status(201).json({ id: data });
+  }));
+
   // ---------- Admin: withdrawals ----------
   app.get('/api/admin/withdrawals', requireAuth, requireRole('admin'), wrap(async (req, res) => {
-    const { data } = await db.from('withdrawal_requests').select('id, amount_kobo, bank_name, account_number, account_name, status, admin_note, created_at, paid_at, wallet_accounts(profiles(full_name, phone))')
+    const { data } = await db.from('withdrawal_requests').select('id, amount_kobo, bank_name, account_number, account_name, status, admin_note, created_at, paid_at, wallet_accounts(business_id, businesses(name), profiles(full_name, phone))')
       .order('created_at', { ascending: false }).limit(100);
     res.json({ withdrawals: data || [] });
   }));
@@ -222,7 +236,10 @@ module.exports = function payments({ app, db, requireAuth, requireRole, wrap, va
     const { data: tx } = w ? await db.from('wallet_transactions').select('kind, amount_kobo, note, created_at').eq('wallet_id', w.id).order('created_at', { ascending: false }).limit(30) : { data: [] };
     const { data: cr } = await db.from('commission_records').select('gross_kobo, commission_kobo, mode, settled').eq('business_id', shop.id);
     const sum = (l, f) => (l || []).reduce((s, x) => s + f(x), 0);
+    const { data: wd } = w ? await db.from('withdrawal_requests').select('id, amount_kobo, bank_name, account_number, status, admin_note, created_at').eq('wallet_id', w.id).order('created_at', { ascending: false }).limit(10) : { data: [] };
+    const { data: ms } = await db.from('platform_settings').select('value').eq('key', 'min_withdrawal_kobo').maybeSingle();
     res.json({
+      withdrawals: (wd || []).map((x) => ({ ...x, account_number: '••••' + String(x.account_number).slice(-4) })), min_withdrawal_kobo: Number(ms && ms.value) || 50000,
       pending_kobo: w ? w.pending_kobo : 0, available_kobo: w ? w.available_kobo : 0, transactions: tx || [],
       total_sales_kobo: sum(cr, (x) => x.gross_kobo), commission_paid_kobo: sum(cr, (x) => x.commission_kobo),
       commission_owed_kobo: sum((cr || []).filter((x) => x.mode === 'provider_collects' && !x.settled), (x) => x.commission_kobo),
