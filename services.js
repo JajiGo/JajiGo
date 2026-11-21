@@ -7,7 +7,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
   const fail = (status, msg) => Object.assign(new Error(msg), { status });
   const uuid = (v) => { if (!z.string().uuid().safeParse(v).success) throw fail(400, 'Invalid id'); return v; };
   const limiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 60, standardHeaders: true });
-  const notify = (user_id, title, body, kind) => db.from('notifications').insert({ user_id, title, body, kind });
+  const notify = (user_id, title, body, kind, link) => db.from('notifications').insert({ user_id, title, body, kind, link: link || null });
   const shortName = (n) => { const p = String(n || 'Customer').trim().split(/\s+/); return p.length > 1 ? `${p[0]} ${p[p.length - 1][0].toUpperCase()}.` : p[0]; };
   const OPEN = ['requested', 'quoted', 'accepted', 'provider_on_the_way', 'in_progress'];
   const SHOWN = ['accepted', 'provider_on_the_way', 'in_progress', 'completed'];          // contact details are shared only from here
@@ -92,7 +92,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
     const { data, error } = await db.from('service_bookings').insert({ customer_id: req.user.id, business_id: s.business_id, service_id: s.id, scheduled_at: b.scheduled_at || null,
       at_customer_location: b.at_customer_location, location_text: b.location_text || null, problem_description: b.problem_description || null }).select('id, status').single();
     if (error) throw error;
-    await notify(s.businesses.owner_id, s.quote_required ? 'New quote request' : 'New booking request', `${shortName(req.user.full_name)} wants: ${s.title}`, 'booking');
+    await notify(s.businesses.owner_id, s.quote_required ? 'New quote request' : 'New booking request', `${shortName(req.user.full_name)} wants: ${s.title}`, 'booking', '#/provider');
     res.status(201).json({ booking: data });
   }));
 
@@ -125,7 +125,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
     const x = await myBooking(req.params.id, req.user.id);
     if (!['requested', 'quoted', 'accepted'].includes(x.status)) throw fail(400, 'This booking can no longer be cancelled here. Please contact the provider.');
     await move(x.id, x.status, { status: 'cancelled', cancel_reason: b.reason || 'Cancelled by customer' });
-    await notify(x.businesses.owner_id, 'Booking cancelled', `${x.service_listings.title}: the customer cancelled.`, 'booking');
+    await notify(x.businesses.owner_id, 'Booking cancelled', `${x.service_listings.title}: the customer cancelled.`, 'booking', '#/provider');
     res.json({ ok: true });
   }));
   app.post('/api/services/bookings/:id/accept-quote', requireAuth, limiter, wrap(async (req, res) => {
@@ -136,7 +136,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
     if (!when) throw fail(400, 'Please choose a date and time for the job.');
     await checkSlot(x.business_id, when);
     await move(x.id, 'quoted', { status: 'accepted', scheduled_at: when });
-    await notify(x.businesses.owner_id, 'Quote accepted', `${x.service_listings.title}: the customer accepted your price.`, 'booking');
+    await notify(x.businesses.owner_id, 'Quote accepted', `${x.service_listings.title}: the customer accepted your price.`, 'booking', '#/provider');
     res.json({ ok: true });
   }));
   app.post('/api/services/bookings/:id/accept-time', requireAuth, limiter, wrap(async (req, res) => {
@@ -146,7 +146,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
     const needsQuote = x.service_listings.quote_required && x.quoted_price_kobo == null;
     if (needsQuote) await db.from('service_bookings').update({ scheduled_at: x.proposed_at, proposed_at: null }).eq('id', x.id);
     else await move(x.id, 'requested', { status: 'accepted', scheduled_at: x.proposed_at, proposed_at: null });
-    await notify(x.businesses.owner_id, 'New time accepted', `${x.service_listings.title}: the customer agreed to your time.`, 'booking');
+    await notify(x.businesses.owner_id, 'New time accepted', `${x.service_listings.title}: the customer agreed to your time.`, 'booking', '#/provider');
     res.json({ ok: true });
   }));
 
@@ -181,7 +181,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
     const { data: x } = await db.from('service_bookings').select('id, status, customer_id, scheduled_at, at_customer_location, quoted_price_kobo, service_listings(title, price_kobo, quote_required)')
       .eq('id', uuid(req.params.id)).eq('business_id', biz.id).maybeSingle();
     if (!x) throw fail(404, 'Booking not found');
-    const title = x.service_listings.title, tell = (t, m) => notify(x.customer_id, t, `${biz.name}: ${title}. ${m || ''}`.trim(), 'booking');
+    const title = x.service_listings.title, tell = (t, m) => notify(x.customer_id, t, `${biz.name}: ${title}. ${m || ''}`.trim(), 'booking', `#/booking/${x.id}`);
     switch (b.action) {
       case 'accept':
         if (x.status !== 'requested') throw fail(400, 'Only new requests can be accepted.');
