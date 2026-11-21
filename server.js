@@ -110,9 +110,11 @@ const businessSchema = z.object({
 });
 app.post('/api/businesses/register', requireAuth, wrap(async (req, res) => {
   const b = validate(businessSchema, req.body);
+  if (req.user.role === 'admin') return res.status(403).json({ error: 'Admin accounts cannot register a business' });
+  if (b.marketplace === 'services' && !b.business_type_id && !b.custom_type) return res.status(400).json({ error: 'Please choose your type of service' });
   const { data, error } = await db.from('businesses')
     .insert({ ...b, owner_id: req.user.id, verification: 'pending' }).select('id, marketplace, name, verification').single();
-  if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.code === '23505' ? 'You already registered this marketplace type' : 'Could not register business' });
+  if (error) return res.status(error.code === '23505' ? 409 : 500).json({ error: error.code === '23505' ? 'You already have a shop or service account. One account can only be one type.' : 'Could not register business' });
   if (req.user.role === 'customer') {
     await db.from('profiles').update({ role: b.marketplace === 'shopping' ? 'seller' : 'provider' }).eq('id', req.user.id);
   }
@@ -151,6 +153,7 @@ require('./payments')({ app, db, requireAuth, requireRole, wrap, validate });
 require('./extras')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
 require('./reviews')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
+require('./services')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 
 // ---------- Website (the app screens) ----------
 app.use(express.static(require('path').join(__dirname, 'public')));
