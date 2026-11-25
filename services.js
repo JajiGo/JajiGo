@@ -23,14 +23,14 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
   }));
 
   app.get('/api/services/providers', wrap(async (req, res) => {
-    let q = db.from('businesses').select('id, name, description, address, logo_url, on_site_service, custom_type, business_type_id, provider_business_types(name), service_listings(price_kobo, quote_required, is_active)')
+    let q = db.from('businesses').select('id, name, description, address, logo_url, on_site_service, id_verified, custom_type, business_type_id, provider_business_types(name), service_listings(price_kobo, quote_required, is_active)')
       .eq('marketplace', 'services').eq('verification', 'approved').limit(60);
     if (req.query.type) q = q.eq('business_type_id', Number(req.query.type));
     if (req.query.q) q = q.ilike('name', `%${String(req.query.q).replace(/[%_,()]/g, ' ').trim()}%`);
     const { data } = await q;
     res.json({ providers: (data || []).map((b) => {
       const act = (b.service_listings || []).filter((s) => s.is_active), prices = act.filter((s) => s.price_kobo != null).map((s) => s.price_kobo);
-      return { id: b.id, name: b.name, description: b.description, address: b.address, logo_url: b.logo_url, on_site_service: b.on_site_service,
+      return { id: b.id, name: b.name, description: b.description, address: b.address, logo_url: b.logo_url, on_site_service: b.on_site_service, id_verified: b.id_verified,
         type: (b.provider_business_types && b.provider_business_types.name) || b.custom_type || 'Service', type_id: b.business_type_id,
         from_price_kobo: prices.length ? Math.min(...prices) : null, offers_quotes: act.some((s) => s.quote_required), service_count: act.length };
     }) });
@@ -38,7 +38,7 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
 
   app.get('/api/services/providers/:id', wrap(async (req, res) => {
     const id = uuid(req.params.id);
-    const { data: b } = await db.from('businesses').select('id, name, description, address, service_area, logo_url, cover_url, on_site_service, custom_type, provider_business_types(name)')
+    const { data: b } = await db.from('businesses').select('id, name, description, address, service_area, logo_url, cover_url, on_site_service, id_verified, custom_type, provider_business_types(name)')
       .eq('id', id).eq('marketplace', 'services').eq('verification', 'approved').maybeSingle();
     if (!b) throw fail(404, 'Provider not found');
     const today = lagos(new Date().toISOString()).day;
@@ -53,12 +53,12 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
   }));
 
   app.get('/api/services/listings/:id', wrap(async (req, res) => {
-    const { data: sv } = await db.from('service_listings').select('id, title, description, price_kobo, quote_required, duration_minutes, is_active, businesses(id, name, address, on_site_service, verification, marketplace)').eq('id', uuid(req.params.id)).maybeSingle();
+    const { data: sv } = await db.from('service_listings').select('id, title, description, price_kobo, quote_required, duration_minutes, is_active, businesses(id, name, address, on_site_service, id_verified, verification, marketplace)').eq('id', uuid(req.params.id)).maybeSingle();
     if (!sv || !sv.is_active || !sv.businesses || sv.businesses.marketplace !== 'services' || sv.businesses.verification !== 'approved') throw fail(404, 'Service not available');
     const bid = sv.businesses.id;
     const { data: hrs } = await db.from('provider_availability').select('weekday, start_time, end_time').eq('business_id', bid).order('weekday');
     const { businesses: b, ...service } = sv;
-    res.json({ service, provider: { id: b.id, name: b.name, address: b.address, on_site_service: b.on_site_service }, hours: hrs || [] });
+    res.json({ service, provider: { id: b.id, name: b.name, address: b.address, on_site_service: b.on_site_service, id_verified: b.id_verified }, hours: hrs || [] });
   }));
 
   // ---------- CUSTOMER BOOKINGS ----------
@@ -79,10 +79,11 @@ module.exports = function services({ app, db, requireAuth, requireRole, wrap, va
   app.post('/api/services/bookings', requireAuth, limiter, wrap(async (req, res) => {
     const b = validate(z.object({ service_id: z.string().uuid(), scheduled_at: z.string().datetime().optional(), at_customer_location: z.boolean(),
       location_text: z.string().trim().max(300).optional(), problem_description: z.string().trim().max(1000).optional() }), req.body);
-    const { data: s } = await db.from('service_listings').select('id, title, quote_required, is_active, business_id, businesses(id, owner_id, verification, marketplace, on_site_service)').eq('id', b.service_id).maybeSingle();
+    const { data: s } = await db.from('service_listings').select('id, title, quote_required, is_active, business_id, businesses(id, owner_id, verification, marketplace, on_site_service, id_verified)').eq('id', b.service_id).maybeSingle();
     if (!s || !s.is_active || !s.businesses || s.businesses.marketplace !== 'services' || s.businesses.verification !== 'approved') throw fail(404, 'Service not available');
     if (s.businesses.owner_id === req.user.id) throw fail(403, 'You cannot book your own service');
     if (b.at_customer_location && !s.businesses.on_site_service) throw fail(400, 'This provider does not come to the customer. Choose "at the provider".');
+    if (b.at_customer_location && !s.businesses.id_verified) throw fail(400, 'This provider has not added an ID number yet, so home visits are not available. Choose "at the provider".');
     if (b.at_customer_location && !b.location_text) throw fail(400, 'Please tell the provider where to come (area and street).');
     if (!s.quote_required && !b.scheduled_at) throw fail(400, 'Please choose a date and time.');
     if (b.scheduled_at) await checkSlot(s.business_id, b.scheduled_at);

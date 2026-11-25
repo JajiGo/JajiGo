@@ -59,15 +59,29 @@ const signupSchema = z.object({
   password: z.string().min(8).max(72),
   full_name: z.string().min(2).max(100),
   phone: z.string().regex(/^[0-9+]{10,15}$/, 'Enter a valid phone number'),
+  id_type: z.string().optional(),
+  id_number: z.string().max(30).optional(),
 });
 app.post('/api/auth/signup', authLimiter, wrap(async (req, res) => {
   const b = validate(signupSchema, req.body);
+  // every new account must give an ID number (checked, encrypted and duplicate-checked before the account is created)
+  const idn = app.locals.identity;
+  let idp = null;
+  if (idn && idn.configured) {
+    if (!b.id_type || !b.id_number) return res.status(400).json({ error: 'Please choose your ID type and enter your ID number.' });
+    idp = idn.prepare(b.id_type, b.id_number);
+    await idn.ensureUnique(idp.hash);
+  }
   const { data, error } = await db.auth.admin.createUser({ email: b.email, password: b.password, email_confirm: true });
   if (error) return res.status(400).json({ error: error.message });
   const { error: pErr } = await db.from('profiles').insert({ id: data.user.id, full_name: b.full_name, phone: b.phone, role: 'customer' });
   if (pErr) {
     await db.auth.admin.deleteUser(data.user.id); // do not leave half-created accounts
     return res.status(pErr.code === '23505' ? 409 : 500).json({ error: pErr.code === '23505' ? 'Phone number already used' : 'Could not create profile' });
+  }
+  if (idp) {
+    try { await idn.save(data.user.id, idp); }
+    catch (e) { await db.auth.admin.deleteUser(data.user.id); throw e; }   // no account without its ID
   }
   res.status(201).json({ message: 'Account created. You can now log in.' });
 }));
@@ -89,7 +103,7 @@ app.post('/api/auth/refresh', authLimiter, wrap(async (req, res) => {
 }));
 
 app.get('/api/me', requireAuth, wrap(async (req, res) => {
-  const { data: businesses } = await db.from('businesses').select('id, marketplace, name, verification, rejection_reason').eq('owner_id', req.user.id);
+  const { data: businesses } = await db.from('businesses').select('id, marketplace, name, verification, rejection_reason, on_site_service, id_verified').eq('owner_id', req.user.id);
   res.json({ user: { id: req.user.id, email: req.user.email, full_name: req.user.full_name, phone: req.user.phone, role: req.user.role }, businesses: businesses || [] });
 }));
 
@@ -139,6 +153,7 @@ app.patch('/api/admin/businesses/:id/verification', requireAuth, requireRole('ad
   if ((b.status === 'rejected' || b.status === 'suspended') && !b.reason) return res.status(400).json({ error: 'A reason is required' });
   const { data, error } = await db.from('businesses')
     .update({ verification: b.status, rejection_reason: b.reason || null }).eq('id', req.params.id).select('id, owner_id, name').single();
+  if (error && String(error.message).includes('id_required')) return res.status(400).json({ error: 'This provider visits customers, so they must add an ID number first.' });
   if (error || !data) return res.status(404).json({ error: 'Business not found' });
   await audit(req.user.id, 'business_verification', 'businesses', data.id, b);
   await db.from('notifications').insert({
@@ -154,6 +169,7 @@ require('./extras')({ app, db, requireAuth, requireRole, wrap, validate, SUPABAS
 require('./shopping')({ app, db, requireAuth, requireRole, wrap, validate, audit, SUPABASE_URL });
 require('./reviews')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
 require('./services')({ app, db, requireAuth, requireRole, wrap, validate, SUPABASE_URL });
+require('./identity')({ app, db, requireAuth, requireRole, wrap, validate });   // ID numbers. ID photo uploads are switched off for now: verification.js is not loaded
 
 // ---------- Website (the app screens) ----------
 app.use(express.static(require('path').join(__dirname, 'public')));
